@@ -1,0 +1,341 @@
+# =============================================================================
+# WITIVE Knowledge AI — .gitignore
+# Cross-platform: Windows / macOS / Linux (Ubuntu)
+# Stack: Python 3.12 + uv + FastAPI + AWS + Pinecone + Neo4j
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+# 시크릿·환경 변수 (보안 — 절대 커밋 금지)
+# -----------------------------------------------------------------------------
+# 환경 변수 파일
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# AWS·Cloud credentials
+.aws/
+aws-credentials*
+*.pem
+*.key
+*.crt
+*.cer
+*.pfx
+*.p12
+
+# SSH·GPG
+id_rsa*
+id_ed25519*
+id_ecdsa*
+id_dsa*
+known_hosts
+*.gpg
+
+# 일반 secret 파일
+secrets/
+credentials*.json
+service-account*.json
+*token*.json
+.netrc
+.pypirc
+
+# MCP·Claude 로컬 override (실 키가 들어가는 변형)
+.mcp.local.json
+.claude/.local/
+.claude/local.json
+.claude/settings.local.json
+
+# Gmail SMTP·외부 SaaS 토큰을 직접 박은 파일
+*.app-password
+*.smtp-password
+
+
+# -----------------------------------------------------------------------------
+# Python
+# -----------------------------------------------------------------------------
+# Bytecode·캐시
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# 패키지 빌드
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+*.egg
+MANIFEST
+share/python-wheels/
+pip-wheel-metadata/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# 가상환경
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.python-version
+
+# uv (lock 파일은 커밋 — 무시 X)
+.uv-cache/
+.uv/
+
+# 테스트·커버리지
+.pytest_cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+coverage.json
+coverage.xml
+htmlcov/
+.hypothesis/
+nosetests.xml
+
+# 정적 분석 결과
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.ruff_cache/
+.pyre/
+.pytype/
+bandit.json
+pip-audit.json
+.bandit
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+profile_default/
+ipython_config.py
+
+# Sphinx
+docs/_build/
+
+# Translations
+*.mo
+*.pot
+
+# Type stubs (생성형)
+*.pyi.bak
+
+
+# -----------------------------------------------------------------------------
+# 본 프로젝트 특화
+# -----------------------------------------------------------------------------
+# KPI 보고서·로그 (D agent 산출물, /review-check, /rubric)
+kpi/*.html
+kpi/*.jsonl
+kpi/*.json
+!kpi/.gitkeep
+
+# 실 고객 데이터 골든셋 (PII 위험, 별도 사설 저장소 — `docs/11-testing.md` §4.4)
+tests/rag_eval/private/
+tests/rag_eval/customer-*/
+
+# 부하 테스트 출력
+tests/load/output*.json
+tests/load/results/
+
+# Claude Code hook 로컬 캐시
+.claude/scripts/__pycache__/
+.claude/.cache/
+
+# Skill 패턴 데이터의 로컬 변형 (공격 패턴은 commit, 운영 결과는 X)
+.claude/skills/*/results/
+.claude/skills/*/*.local.*
+
+
+# -----------------------------------------------------------------------------
+# 인프라·배포
+# -----------------------------------------------------------------------------
+# Terraform (운영 시 사용 가능)
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+
+# Docker
+docker-compose.override.yml
+docker-compose.*.local.yml
+.dockerignore.local
+
+# CDK·SAM (있을 시)
+cdk.out/
+.aws-sam/
+
+# Harness CD 로컬 (사용 시)
+.harness/local/
+
+
+# -----------------------------------------------------------------------------
+# 로그·임시 파일
+# -----------------------------------------------------------------------------
+*.log
+*.log.*
+logs/
+log/
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
+*.orig
+*.swp
+*.swo
+*~
+tmp/
+temp/
+.cache/
+.tmp/
+
+
+# -----------------------------------------------------------------------------
+# IDE·에디터
+# -----------------------------------------------------------------------------
+# VS Code (settings·extensions는 일부 commit 가능 — 필요 시 !.vscode/settings.json)
+.vscode/
+.vscode-test/
+.history/
+
+# JetBrains (PyCharm·IntelliJ)
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Sublime
+*.sublime-project
+*.sublime-workspace
+
+# Vim·Neovim
+*.swp
+*.swo
+*.swn
+.netrwhist
+Session.vim
+
+# Emacs
+*~
+\#*\#
+.\#*
+.dir-locals.el
+
+# Cursor·Windsurf
+.cursor/
+.windsurf/
+
+# Zed
+.zed/
+
+
+# -----------------------------------------------------------------------------
+# OS — Windows
+# -----------------------------------------------------------------------------
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+
+# -----------------------------------------------------------------------------
+# OS — macOS
+# -----------------------------------------------------------------------------
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+
+# -----------------------------------------------------------------------------
+# OS — Linux (Ubuntu)
+# -----------------------------------------------------------------------------
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+
+# -----------------------------------------------------------------------------
+# Node·기타 (사용 안 하지만 동료 환경 보호)
+# -----------------------------------------------------------------------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.npm/
+.yarn/
+.pnp.*
+
+
+# -----------------------------------------------------------------------------
+# 압축·바이너리·미디어 (실수 commit 방지)
+# -----------------------------------------------------------------------------
+*.tar
+*.tar.gz
+*.tgz
+*.zip
+*.rar
+*.7z
+*.gz
+*.bz2
+
+# 본 프로젝트 sample 파일은 명시 화이트리스트로 관리
+# (예: tests/rag_eval/synthetic/corpus/*.pdf 는 명시적으로 add 후 commit)
+
+
+# -----------------------------------------------------------------------------
+# 보안 스캔·SBOM (생성형, commit X)
+# -----------------------------------------------------------------------------
+.snyk
+*.sarif
+sbom.json
+sbom.spdx
+trivy-results.*
