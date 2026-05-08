@@ -17,6 +17,10 @@
           {
             "type": "command",
             "command": "python .claude/scripts/log_token_usage.py"
+          },
+          {
+            "type": "command",
+            "command": "python .claude/scripts/post_stop_orchestrator.py"
           }
         ]
       }
@@ -37,6 +41,10 @@
           {
             "type": "command",
             "command": "python .claude/scripts/load_nearest_work_rule.py"
+          },
+          {
+            "type": "command",
+            "command": "python .claude/scripts/inject_completion_directive.py"
           }
         ]
       }

@@ -6,15 +6,15 @@ description: 바이브코딩 rubric 정량 지표(가독성·복잡도·docstrin
 
 ## 바이브코딩 rubric (오픈소스 5종 묶음 → `code-rubric` Skill)
 
-| 지표 | 도구 | 의미 | 임계 |
-|---|---|---|---|
-| Cyclomatic Complexity (CC) | radon | 분기 수 → 가독성 | 평균 ≤ B (≤ 10) |
-| Maintainability Index (MI) | radon | 종합 유지보수성 | ≥ 65 |
-| Halstead Metrics | radon | 어휘 복잡도 | (참고) |
-| Cognitive Complexity | mccabe | 사람 머릿속 부담 | ≤ 15/함수 |
-| Docstring coverage | interrogate | 문서화 비율 | ≥ 80% |
-| Dead code | vulture | 사용 안 되는 코드 | 발견 0 |
-| Security | bandit | 보안 안티패턴 | High 0 |
+| 지표                       | 도구        | 의미              | 임계            |
+| -------------------------- | ----------- | ----------------- | --------------- |
+| Cyclomatic Complexity (CC) | radon       | 분기 수 → 가독성  | 평균 ≤ B (≤ 10) |
+| Maintainability Index (MI) | radon       | 종합 유지보수성   | ≥ 65            |
+| Halstead Metrics           | radon       | 어휘 복잡도       | (참고)          |
+| Cognitive Complexity       | mccabe      | 사람 머릿속 부담  | ≤ 15/함수       |
+| Docstring coverage         | interrogate | 문서화 비율       | ≥ 80%           |
+| Dead code                  | vulture     | 사용 안 되는 코드 | 발견 0          |
+| Security                   | bandit      | 보안 안티패턴     | High 0          |
 
 ## 본 명령어 본문 (Claude가 실행)
 

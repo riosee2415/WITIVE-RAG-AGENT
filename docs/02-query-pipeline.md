@@ -109,7 +109,7 @@ ARC §8 "권한 단위" 의도와 일치. EXECUTIVE 사용자 N명의 hit율 0% 
 | 트리거 | 동작 |
 |---|---|
 | 해당 tenant 문서 업로드/삭제/버전 변경 완료 (Worker가 `03-document-pipeline.md` §3.6 Stage B 마지막 단계) | `INCR epoch:{tenant_id}` 1회 |
-| 사용자 권한 변경 (NestJS 호출) | 본 서버는 `meta:user:{user_id}` 삭제만. 캐시 epoch는 건드리지 않음 (권한 변경은 access_sig 변화로 자연스레 새 키) |
+| 사용자 권한 변경 (Next.js 호출) | 본 서버는 `meta:user:{user_id}` 삭제만. 캐시 epoch는 건드리지 않음 (권한 변경은 access_sig 변화로 자연스레 새 키) |
 | 테넌트 마이그레이션 (Index 재생성 등) | admin tool이 `INCR epoch:{tenant_id}` |
 
 epoch INCR 실패 (Redis 일시 장애) → 잠시 stale 노출 가능 (TTL 60~300s). 다음 INCR 시 정상화.
@@ -282,7 +282,7 @@ S3 chunks.jsonl은 색인 단계에서 청크별 byte offset을 metadata.json에
 - `Last-Event-ID` 헤더로 클라이언트 reconnection 시 resumption 지원
 
 운영 가정 idle timeout (모두 15s 초과 안전):
-- NestJS SSE 프록시 idle timeout: ≥ 60s 권장 (NestJS 측 설정 책임)
+- Next.js SSE 프록시 idle timeout: ≥ 60s 권장 (Next.js 측 설정 책임)
 - AWS ALB idle_timeout: 기본 60s — **120s로 상향 권장** (대용량 답변 시 token 사이 간격 안전 마진)
 - API Gateway: HTTP API는 30s 고정, REST API 29s — SSE에는 부적합. 본 서버는 ALB→ECS 직접 경로 가정
 
@@ -298,7 +298,7 @@ S3 chunks.jsonl은 색인 단계에서 청크별 byte offset을 metadata.json에
 |---|---|---|
 | `:heartbeat` (comment) | (없음) | connection 유지, 클라이언트 무시 |
 | `rewritten_query` | `{"content": str, "meta": {"fallback": bool}}` | Stage 1 결과 또는 fallback 원본 |
-| `sources` | `{"content": [{"chunk_id", "doc_id", "doc_name", "version", "is_current", "effective_date", "section", "page", "excerpt", "similarity_score", "warning"?}]}` | 상위 5개 청크. `chunk_id`는 NestJS·클라이언트 피드백/추적용 |
+| `sources` | `{"content": [{"chunk_id", "doc_id", "doc_name", "version", "is_current", "effective_date", "section", "page", "excerpt", "similarity_score", "warning"?}]}` | 상위 5개 청크. `chunk_id`는 Next.js·클라이언트 피드백/추적용 |
 | `warnings` | `{"content": [{"type", "severity", "message", "...추가 필드"}]}` | 종류는 §8 매트릭스 |
 | `token` | `{"content": str}` | 답변 토큰 chunk |
 | `done` | `{"meta": {"latency_ms": int, "tokens_used": {"input", "output", "cache_read"}, "cache_hit": bool, "fallback_used": [str], "epoch": int}}` | 종료 |
@@ -366,4 +366,4 @@ S3 chunks.jsonl은 색인 단계에서 청크별 byte offset을 metadata.json에
 - 캐시 키 구조 변경 (epoch 포함, access_sig 정의 등) → `04-data-stores.md` §4.1과 동기화 필수
 - 첫 토큰 SLO 변경 → `09-observability.md` 메트릭 임계, `11-testing.md` P95 측정 임계 동기화
 - chunk 본문 로드 경로 변경 → `03-document-pipeline.md` (chunks.jsonl 포맷·byte offset) + `04-data-stores.md` §3.4 동기화
-- SSE 이벤트 형식·payload 스키마 변경 → `06-api.md` 갱신 + NestJS 프록시 contract 조율 필수 (keep-alive는 FastAPI 위임이라 본 서버 변경 사항 아님)
+- SSE 이벤트 형식·payload 스키마 변경 → `06-api.md` 갱신 + Next.js 프록시 contract 조율 필수 (keep-alive는 FastAPI 위임이라 본 서버 변경 사항 아님)

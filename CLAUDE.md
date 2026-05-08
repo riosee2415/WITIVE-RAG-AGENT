@@ -1,11 +1,11 @@
 # WITIVE Knowledge AI — Harness root
 
-LLM·RAG·AI 전담 FastAPI 마이크로서비스. NestJS 백엔드의 internal 호출만 받음.
+LLM·RAG·AI 전담 FastAPI 마이크로서비스. Next.js 백엔드(Supabase Auth 검증 후)의 internal 호출만 받음.
 
 ## 절대 규칙 (시스템 레벨, hook 강제)
 
 1. **`@docs/`가 단일 진실 출처** — 코드 변경이 docs와 어긋나면 거부 (`docs-sync` Skill 자동 검증)
-2. **`@docs/00-scope.md` 책임 경계 위반 금지** — Cognito 직접 호출, 사용자 식별자 생성, 인프라 프로비저닝, NestJS 책임 영역 호출 모두 거부
+2. **`@docs/00-scope.md` 책임 경계 위반 금지** — Supabase Auth 직접 호출, 사용자 식별자 생성, 인프라 프로비저닝, Next.js 책임 영역 호출 모두 거부
 3. **모든 데이터 접근은 `tenant_id` 필터 강제** — 누락된 코드는 `import-linter`/QA가 자동 차단 (`@docs/07-multitenancy-and-access.md`)
 4. **외부 의존성 호출은 `app/infra/`만** — `pipeline`·`api`·`domain` 직접 호출 금지 (`@docs/12-coding-conventions.md` §3)
 5. **비용 영향 결정은 ADR 작성** — `@docs/operations/adr/`
@@ -14,11 +14,15 @@ LLM·RAG·AI 전담 FastAPI 마이크로서비스. NestJS 백엔드의 internal 
 
 | 명령 | 동작 |
 |---|---|
-| `/harness <feature>` | A·B·C·D 4-agent 워크플로 시작 |
+| `/harness <feature>` | 자유 자연어 진입점 — 4-agent 워크플로 (즉흥 작업) |
+| `/spec-new <slug>` | `specs/YYYY-MM-DD-<slug>.md` 빈 템플릿 생성 |
+| `/spec <path>` | spec.md 파일 기반 진입점 — planner가 spec.refs만 읽음 (토큰 5–10배 효율). 종료 시 `specs/_done/`로 자동 이동 |
 | `/review-check` | 안정성 KPI 측정 → upustream@gmail.com 이메일 |
 | `/rubric` | 바이브코딩 정량 평가 → upustream@gmail.com 이메일 |
 
-## 멀티 에이전트 (4개)
+**spec 모드 워크플로우** — 버그·수정·추가 사항을 사전에 정리해두고 처리. 양식은 `specs/README.md`. spec 파일은 `.gitignore`로 제외(임시 백로그).
+
+## 멀티 에이전트 (5개)
 
 `/harness` 실행 시 A → B → C → D 순환. hooks로 시스템 강제.
 
@@ -26,6 +30,17 @@ LLM·RAG·AI 전담 FastAPI 마이크로서비스. NestJS 백엔드의 internal 
 - **B** `.claude/agents/implementer.md` — 코드 구현 (model: sonnet)
 - **C** `.claude/agents/qa-tester.md` — QA + work_rule.md 갱신 (model: sonnet)
 - **D** `.claude/agents/kpi-tester.md` — 골든셋 비교 + `kpi/<datetime>_<feature>.html` (model: sonnet)
+- **TDD** `.claude/agents/tdd-runner.md` — 모든 작업 종료 직전 Stop hook이 자동 호출 (model: sonnet)
+
+## 자동 작업 종료 프로토콜 (시스템 강제)
+
+매 작업 종료 시 hooks가 자동으로 다음을 수행한다 (사용자 요청 불필요):
+
+1. **TDD 강제** — 코드/문서 변경이 있으면 `Stop` hook이 `decision:block`을 반환해 `tdd-runner` 서브에이전트 실행을 강제
+2. **work_rule 갱신** — 변경 파일에 가까운 `work_rule.md`의 `## 자동 활동 로그` 섹션에 행 append (C qa-tester 영역과 분리)
+3. **보고서 발행** — `reports/YYYY-MM-DD-<slug>.html`에 사용자 프롬프트·도구 호출·에러·토큰 사용량 자동 기록
+
+훅 구현: `.claude/scripts/{inject_completion_directive,post_stop_orchestrator,update_work_rule,generate_report}.py`
 
 ## 토큰 효율 정책
 

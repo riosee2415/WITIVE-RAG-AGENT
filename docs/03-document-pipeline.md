@@ -7,7 +7,7 @@
 ## 1. 한 문서의 전체 흐름
 
 ```
-[NestJS] ── multipart upload ──→ [동기 핸들러]
+[Next.js] ── multipart upload ──→ [동기 핸들러]
                                        │
                                        ▼
                               [검증]  MIME / 크기 / 해시 / 입력 헤더
@@ -157,7 +157,7 @@ ParsedDocument
 
 | 상황 | 처리 |
 |---|---|
-| 손상 파일 / 디코드 실패 | S3 객체를 `failed-parse/` prefix로 이동, job=`FAILED`, error 코드 기록, NestJS에 알림 (직접 SES 안 함) |
+| 손상 파일 / 디코드 실패 | S3 객체를 `failed-parse/` prefix로 이동, job=`FAILED`, error 코드 기록, Next.js에 알림 (직접 SES 안 함) |
 | 텍스트 PDF인데 추출량 < 임계 (기본 100자/페이지) | OCR(Textract)로 자동 폴백 + `warnings: OCR_FALLBACK` |
 | 스캔 PDF인데 OCR confidence < 0.70 | confidence 미만 라인 폐기, `warnings: OCR_LOW_CONFIDENCE` |
 | URL robots.txt 차단 | job=`FAILED`, error=`URL_BLOCKED` |
@@ -245,7 +245,7 @@ Chunk
 |---|---|
 | 1 (Pinecone live upsert) | live가 들어가지 않음 → Stage A 상태로 간주. job=`FAILED_STAGE_B`, cleanup endpoint 대기 |
 | 2 (Pinecone staging delete) | live는 이미 들어감. staging도 잔존 → 검색은 live만 보므로 노출 영향 없음. cleanup endpoint가 처리 |
-| 3 (Neo4j swap) | Pinecone live + Neo4j staging — 신버전 vector는 검색에 노출(Pinecone live). 본문 fetch는 chunk_id 기반 매칭(`04 §2.6`)이라 staging 청크도 정상 반환되어 답변 생성은 성공. sources의 `is_current` 표시는 Pinecone 메타를 1차 출처로 사용해 일관성 유지(`06 §3.1` Source.is_current). job=`PARTIAL_SUCCESS`, 알람. **admin tool 책임 (본 서버 외부)**: Neo4j Version.is_current·Chunk.staging 수동 토글. 본 서버의 cleanup endpoint(§4.4)는 staging artifact 청소 전용이며 live↔staging 되돌리기 기능 없음 — admin tool은 NestJS 또는 별도 운영 도구가 직접 Neo4j에 접속해 처리 |
+| 3 (Neo4j swap) | Pinecone live + Neo4j staging — 신버전 vector는 검색에 노출(Pinecone live). 본문 fetch는 chunk_id 기반 매칭(`04 §2.6`)이라 staging 청크도 정상 반환되어 답변 생성은 성공. sources의 `is_current` 표시는 Pinecone 메타를 1차 출처로 사용해 일관성 유지(`06 §3.1` Source.is_current). job=`PARTIAL_SUCCESS`, 알람. **admin tool 책임 (본 서버 외부)**: Neo4j Version.is_current·Chunk.staging 수동 토글. 본 서버의 cleanup endpoint(§4.4)는 staging artifact 청소 전용이며 live↔staging 되돌리기 기능 없음 — admin tool은 Next.js 또는 별도 운영 도구가 직접 Neo4j에 접속해 처리 |
 | 4 (S3 metadata.json) | Pinecone·Neo4j는 새 버전이 live. metadata.json 일관성 깨짐 → 검색·답변은 정상 동작 (Pinecone·Neo4j가 진실). job=`PARTIAL_SUCCESS`, 알람. admin tool이 metadata.json 수동 복구 |
 | 5 (Redis epoch INCR) | 캐시가 잠시 stale. TTL(60~300s) 만료 자연 회복. warn 로그만 (`02-query-pipeline.md` §3.6과 일관) |
 | 6 (구버전 메타 후처리) | 무시 OK |
@@ -268,14 +268,14 @@ Chunk
 | 조항 번호 매칭 | `Chunk.section_number` 일치 |
 | 결과 | `(new_version)-[:CONFLICTS_WITH]->(old_version)` 관계 생성 (양방향 처리는 어드민 확인 후) |
 
-자동 생성된 후보는 어드민이 검토·확정하는 워크플로(NestJS)로 넘어간다. 본 서버는 후보 생성까지.
+자동 생성된 후보는 어드민이 검토·확정하는 워크플로(Next.js)로 넘어간다. 본 서버는 후보 생성까지.
 
 ### 3.8 완료
 
 - job 상태 = `COMPLETED`, S3 jobs/*.json 갱신 + Redis 캐시 갱신
 - SQS 메시지 삭제
 - 메트릭: `documents_indexed_total`, `chunks_indexed_total`, `parse_duration_seconds`, `embed_duration_seconds`, `index_duration_seconds`
-- NestJS는 polling으로 완료 확인 (외부 웹훅 발송은 NestJS 책임)
+- Next.js는 polling으로 완료 확인 (외부 웹훅 발송은 Next.js 책임)
 
 ## 4. 재시도·DLQ·실패 격리
 
@@ -343,7 +343,7 @@ ARC §5.1·API §3.3·§3.4 반영.
 
 - URL 등록 시 `sync_schedule ∈ {DAILY, WEEKLY, MONTHLY}` → 본 서버는 스케줄러 entry point만 제공 (Worker가 cron 트리거로 발화). 실제 cron 스케줄러는 ECS Scheduled Task 또는 EventBridge로 설정 (`10-config-and-secrets.md`)
 - API 등록 시 외부 인증 토큰은 AWS Secrets Manager에 저장 (`witive/{env}/external/{tenant_id}/{integration_id}`). 본 서버는 secret 이름만 보유, 값은 런타임 로드
-- 토큰 만료/실패 시 job=`FAILED`, error=`EXTERNAL_AUTH_FAILED`, NestJS 알림
+- 토큰 만료/실패 시 job=`FAILED`, error=`EXTERNAL_AUTH_FAILED`, Next.js 알림
 
 ## 6. 멱등성 보장
 
@@ -376,7 +376,7 @@ ARC §5.1·API §3.3·§3.4 반영.
 
 ## 8. 변경 시 영향 범위
 
-- 청킹 알고리즘 변경 → 모든 기존 문서 **재색인 필요**. 점진적 재색인 admin tool 또는 NestJS 책임. 본 서버는 재색인을 트리거할 endpoint만 제공
+- 청킹 알고리즘 변경 → 모든 기존 문서 **재색인 필요**. 점진적 재색인 admin tool 또는 Next.js 책임. 본 서버는 재색인을 트리거할 endpoint만 제공
 - 임베딩 모델 변경 (Titan v2 → v3 등) → 차원 변경 시 새 Pinecone Index 생성 + 전체 재색인. 차원 동일이라도 의미 공간이 달라 재색인 권장
 - 새 포맷 지원 추가 → 파서 모듈 + MIME 화이트리스트 + 테스트 케이스
 - 색인 staging→live 정책 변경 → `02-query-pipeline.md` §5.1의 Pinecone 필터(`index_state=="live"`)와 `04-data-stores.md` §1.3 메타 스키마 동기화

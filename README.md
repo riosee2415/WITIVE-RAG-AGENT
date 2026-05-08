@@ -28,17 +28,17 @@
 - **SSE 스트리밍** sse-starlette + 15s keep-alive ping
 - **멀티테넌트** Pinecone Index·Neo4j Database 물리 격리, S3 prefix + KMS CMK 논리 격리
 
-본 서버는 **API만 제공** — 프론트엔드와 인증·사용자 관리는 별도 NestJS 백엔드 책임 (`docs/00-scope.md`).
+본 서버는 **API만 제공** — 프론트엔드와 인증·사용자 관리는 별도 Next.js 백엔드(Supabase Auth) 책임 (`docs/00-scope.md`).
 
 ## 시스템 위치
 
 ```
-[Client (React)]
+[Client (Next.js)]
       │
       ▼
-[NestJS Backend]   ← Cognito 인증, 사용자/테넌트/통계/과금/웹훅
+[Next.js Backend]  ← Supabase Auth 인증, 사용자/테넌트/통계/과금/웹훅
       │  internal HTTP (X-* 헤더로 검증된 사용자 컨텍스트 전달)
-      │  SSE는 NestJS가 클라이언트로 프록시
+      │  SSE는 Next.js가 클라이언트로 프록시
       ▼
 [FastAPI RAG/AI Service]  ← 본 프로젝트
       │
@@ -71,7 +71,7 @@
 **Observability** structlog · aws-embedded-metrics (EMF) · aws-xray-sdk
 **Resilience** pybreaker · aiolimiter (Redis 분산 token bucket)
 **Quality** ruff · mypy strict · bandit · pip-audit · import-linter · pytest · radon · interrogate · vulture
-**Infra (외부 책임)** AWS ECS Fargate · ALB · API Gateway · Cognito · Harness CD · Terraform
+**Infra (외부 책임)** AWS ECS Fargate · ALB · API Gateway · Supabase Auth · Harness CD · Terraform
 
 ## 폴더 구조
 

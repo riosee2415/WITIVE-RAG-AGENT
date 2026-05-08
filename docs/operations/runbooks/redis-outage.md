@@ -80,7 +80,7 @@ VPC route, SG 변경 사항 확인 (DevOps 협의).
 
 ### 3.2 5분 미회복 → 자동 MAINTENANCE_MODE 진입 시
 
-- **사용자에게 503 + Retry-After: 60 응답**. NestJS·클라이언트는 자연 throttle
+- **사용자에게 503 + Retry-After: 60 응답**. Next.js·클라이언트는 자연 throttle
 - ElastiCache 복구 완료까지 대기
 - 복구 후 환경 변수 `MAINTENANCE_MODE=false` 수동 해제 + ECS 재배포 (또는 Parameter Store 변경 + 핫 리로드)
 - Redis 재연결 확인 후 정상 트래픽 회복

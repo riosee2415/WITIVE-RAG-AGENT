@@ -36,7 +36,7 @@ async with PineconeAsyncio(api_key=PINECONE_API_KEY) as pc:
         )
 ```
 
-`tenant_index_host` 매핑은 본 서버 시작 시 또는 첫 요청 시 lazy 캐시 (`meta:tenant:{tenant_id}` Redis 키, §4.1). 매핑 source는 NestJS가 보유한 테넌트 메타 또는 별도 admin endpoint (`10-config-and-secrets.md` §외부 의존성 부트스트랩).
+`tenant_index_host` 매핑은 본 서버 시작 시 또는 첫 요청 시 lazy 캐시 (`meta:tenant:{tenant_id}` Redis 키, §4.1). 매핑 source는 Next.js가 보유한 테넌트 메타 또는 별도 admin endpoint (`10-config-and-secrets.md` §외부 의존성 부트스트랩).
 
 SDK 메이저 버전(예: `pinecone>=6.0,<7.0`)은 `10-config-and-secrets.md`에 핀.
 
@@ -110,7 +110,7 @@ else:
   - **Stage B (atomic-ish swap)**: 같은 청크를 정상 vector_id + `index_state="live"`로 다시 upsert (batch 100), 그 다음 staging vector ID 리스트 일괄 delete (batch 100). 두 호출 사이 짧은 race window는 staging 메타로 격리되므로 검색 노출 없음
 - 새 버전 추가 시 **구버전 벡터는 삭제하지 않는다** (PRD §4.2 모든 버전 보존). 구버전의 `is_current=false` 메타 갱신은 Stage B 후 비동기 후처리(`Index.update()` 단건; 실패 시 다음 색인에서 자연 보정)
 - 소프트 삭제: 해당 doc_id의 모든 vector를 `archived=true` 메타로 갱신. 검색 시 `archived=false` 필터로 제외
-- 하드 삭제 (테넌트 해지): NestJS/admin tool이 Index 자체를 삭제. 본 서버는 호출하지 않음
+- 하드 삭제 (테넌트 해지): Next.js/admin tool이 Index 자체를 삭제. 본 서버는 호출하지 않음
 
 #### Pinecone update_metadata 한계 (전략 결정 근거)
 
@@ -348,7 +348,7 @@ SET prev.is_current = false
 | Bucket Policy | `s3:prefix` 조건으로 cross-tenant prefix 차단 (관리자 책임, 본 서버는 호출만) |
 | ECS Task Role | put/get만 가능, 버킷 정책·KMS 키 변경 불가 |
 
-KMS 키는 테넌트 생성 시 NestJS/admin tool이 만든다 (`00-scope.md`).
+KMS 키는 테넌트 생성 시 Next.js/admin tool이 만든다 (`00-scope.md`).
 
 ### 3.3 metadata.json 스키마
 
@@ -456,8 +456,8 @@ KMS 키는 테넌트 생성 시 NestJS/admin tool이 만든다 (`00-scope.md`).
 | 트리거 | 삭제·갱신 대상 |
 |---|---|
 | 문서 업로드/수정/삭제 완료 (Worker §3.6 마지막) | `INCR epoch:{tenant_id}` (단일 명령). `meta:doc:{tenant_id}:{doc_id}`도 삭제 |
-| 사용자 권한 변경 (NestJS 호출) | `meta:user:{user_id}` 삭제. epoch 건드리지 않음 (access_sig 변화로 자연 새 키) |
-| 테넌트 메타 변경 (NestJS 호출) | `meta:tenant:{tenant_id}` 삭제 |
+| 사용자 권한 변경 (Next.js 호출) | `meta:user:{user_id}` 삭제. epoch 건드리지 않음 (access_sig 변화로 자연 새 키) |
+| 테넌트 메타 변경 (Next.js 호출) | `meta:tenant:{tenant_id}` 삭제 |
 | 파이프라인 상태 변경 | `job:{job_id}` 5s TTL 자연 만료 + 다음 GET에서 S3 재캐싱 |
 
 **SCAN/KEYS 사용 금지** — 모든 무효화는 `INCR epoch:{tenant_id}` 또는 단일 키 DEL/UNLINK로 충족된다. 운영 중 SCAN이 보이면 코드 리뷰에서 차단.
@@ -498,7 +498,7 @@ Redis 장애 시: 캐시 미스로 폴백 (서비스 가용성 유지). epoch GE
 
 **Stage B 단계 순서는 `03-document-pipeline.md` §3.6이 단일 진실 출처**다 (6단계: Pinecone live upsert → Pinecone staging delete → Neo4j swap → S3 metadata → Redis epoch INCR → 비동기 후처리). 본 절은 시점만 요약:
 
-- **Neo4j swap**(staging→live)이 metadata.json보다 먼저 끝나야 한다 — 외부(NestJS)는 metadata.json을 진실 출처로 보므로, metadata.json 갱신 후 검색이 들어오면 Neo4j·Pinecone이 이미 정합 상태여야 한다
+- **Neo4j swap**(staging→live)이 metadata.json보다 먼저 끝나야 한다 — 외부(Next.js)는 metadata.json을 진실 출처로 보므로, metadata.json 갱신 후 검색이 들어오면 Neo4j·Pinecone이 이미 정합 상태여야 한다
 - **구버전 Pinecone `is_current=false`** 갱신은 Stage B 마지막 비동기 후처리(단건 update; Pinecone batch 한계 §1.5). 실패해도 안전 — 검색 결과가 신·구 버전 모두 노출될 수 있으나 재랭킹 + 신버전 우선 정책으로 영향 최소
 
 ### 5.4 chunk 본문 일관성 (Neo4j Chunk.text ↔ S3 chunks.jsonl)

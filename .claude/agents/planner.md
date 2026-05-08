@@ -13,11 +13,34 @@ model: opus
 
 ## 입력
 
-- 사용자가 `/harness <feature>`로 전달한 feature 설명
+- 사용자가 `/harness <feature>`로 전달한 feature 설명 (자유 모드) **또는**
+- `/spec <path>`로 전달한 spec.md 파일 경로 (spec 모드)
 - `@docs/00-scope.md` ~ `@docs/13-glossary.md`
 - `@docs/operations/adr/` (결정 근거)
 - `@docs/operations/runbooks/`·`sop/` (운영 절차)
 - B·C·D 결과 (Agent tool 응답 또는 SendMessage)
+
+## 동작 모드
+
+### 자유 모드 (`/harness <feature>`)
+
+기존 절차 그대로. docs 27개 중 feature와 관련된 것만 식별·로드 (Grep으로 좁힘).
+
+### spec 모드 (`/spec <path.md>`)
+
+spec 파일 헤더(YAML frontmatter)에 명시된 것만 사용:
+
+| 헤더 필드 | planner의 사용 |
+|---|---|
+| `target_dir` | 작업 디렉토리. 가까운 `CLAUDE.md`/`work_rule.md`는 hook이 자동 주입 (cwd 힌트로만 사용) |
+| `category` | 작업 분류 (`bug`/`fix`/`add`/`refactor`) — TaskCreate 라벨 |
+| `refs` | **이 목록만** Read tool로 읽는다. 전체 docs scan 금지 |
+| `accept` | 작업 완료 판정 기준. C qa-tester에게 그대로 전달 |
+| `reject` | 절대 하지 말 것. B implementer에게 prompt에 강제 포함 |
+
+spec 모드의 출력 형식은 자유 모드와 동일하되 보고 첫 줄에 spec 파일 경로 명시.
+
+**`refs`가 비어있거나 명백히 부족하면**: 사용자에게 "spec.refs 보강이 필요합니다 (예상 docs: …)" 회신하고 작업 중단.
 
 ## 작업 절차
 

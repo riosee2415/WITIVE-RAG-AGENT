@@ -14,7 +14,7 @@
 | **Stage 2**               | Hybrid RAG       | Pinecone(벡터) + Neo4j(그래프) 병렬 검색 → 재랭킹 → 권한 필터 → Claude Sonnet 4.6 답변 생성                                                            |
 | **Stage A**               | staging upsert   | 색인 1단계. 청크를 staging 메타로 Pinecone·Neo4j에 적재 (검색 노출 안 됨, `03 §3.6`)                                                                   |
 | **Stage B**               | swap to live     | 색인 2단계. staging → live 전환. 6단계 atomic-ish swap (Pinecone live upsert → staging delete → Neo4j swap → S3 metadata → epoch INCR → 비동기 후처리) |
-| **TenantContext**         | —                | NestJS가 보낸 X-\* 헤더로부터 build된 immutable dataclass. 모든 use case의 첫 인자 (`07 §1.1`)                                                         |
+| **TenantContext**         | —                | Next.js가 보낸 X-\* 헤더로부터 build된 immutable dataclass. 모든 use case의 첫 인자 (`07 §1.1`)                                                        |
 | **access_sig**            | access signature | 캐시 키에 들어가는 권한 클래스 해시. `sha256(role + departments + level)`. EXECUTIVE 사용자 user_id는 미포함 (`02 §3.2`)                               |
 | **epoch invalidation**    | —                | 테넌트 캐시 무효화 패턴. `INCR epoch:{tenant_id}` 1회로 모든 캐시 자연 stale (`02 §3.1`)                                                               |
 | **EXECUTIVE post-filter** | —                | EXECUTIVE access_level 청크를 응답 직전 user_id 화이트리스트로 폐기 (`02 §5.4`)                                                                        |
@@ -130,8 +130,8 @@
 | **WORM**                                      | Write Once Read Many       | S3 Object Lock — 변경 불가 보존                                                                                        |
 | **ElastiCache**                               | AWS ElastiCache            | 매니지드 Redis                                                                                                         |
 | **SQS**                                       | AWS Simple Queue Service   | 메시지 큐. 본 서버 문서 파이프라인용                                                                                   |
-| **SES**                                       | AWS Simple Email Service   | 이메일 발송 (NestJS 책임)                                                                                              |
-| **Cognito**                                   | AWS Cognito                | 사용자 인증 (NestJS 책임)                                                                                              |
+| **SES**                                       | AWS Simple Email Service   | 이메일 발송 (Next.js 책임)                                                                                             |
+| **Supabase Auth**                             | —                          | 사용자 인증·세션 관리·JWT 발급 (Next.js가 검증, 본 서버는 호출 안 함)                                                  |
 | **ECS Fargate**                               | —                          | AWS의 서버리스 컨테이너                                                                                                |
 | **ALB**                                       | Application Load Balancer  | AWS의 L7 로드 밸런서                                                                                                   |
 | **API Gateway**                               | AWS API Gateway            | API 관리. 본 서버는 ALB 직접 사용 (SSE 호환성)                                                                         |
@@ -144,7 +144,8 @@
 | **LocalStack**                                | —                          | AWS 서비스 로컬 시뮬레이터                                                                                             |
 | **testcontainers**                            | —                          | Docker 기반 테스트 의존성 도구                                                                                         |
 | **Harness CD**                                | —                          | CI/CD 도구. 본 서버 외 (DevOps)                                                                                        |
-| **NestJS**                                    | —                          | TypeScript 기반 백엔드 프레임워크. 본 서버를 호출하는 상위 백엔드                                                      |
+| **Next.js**                                   | —                          | React 기반 풀스택 프레임워크. 본 서버를 호출하는 상위 백엔드 (Route Handler / API Routes로 internal HTTP 발신)         |
+| **Supabase**                                  | —                          | PostgreSQL + Auth + Storage 매니지드 BaaS. 본 프로젝트는 Auth만 사용 (사용자/세션/JWT)                                 |
 | **sse-starlette**                             | —                          | FastAPI 생태계의 SSE 라이브러리. `EventSourceResponse` 제공 (FastAPI 공식 패키지에 SSE 모듈 없음). `02 §6.2 / 06 §3.1` |
 | **aws-embedded-metrics**                      | —                          | EMF 형식으로 CloudWatch 메트릭을 로그에 박는 라이브러리 (PutMetricData 호출 0). `09 §2`                                |
 | **aiolimiter**                                | —                          | async token bucket rate limiter. Bedrock RPS 글로벌 제한 (Redis 장애 시 로컬 fallback). `05 §5.2`                      |

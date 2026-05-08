@@ -10,7 +10,7 @@
 ### 1.1 질의 흐름 (동기 SSE)
 
 ```
-NestJS → POST /internal/query
+Next.js → POST /internal/query
    │
    ▼
 [Stage 1] Bedrock Claude Haiku 4.5로 질문 재작성
@@ -35,7 +35,7 @@ SSE 이벤트: rewritten_query → token… → sources → warnings → done
 ### 1.2 문서 흐름 (동기 검증 + 비동기 Worker)
 
 ```
-NestJS → POST /internal/documents/upload
+Next.js → POST /internal/documents/upload
    │
    ▼
 [검증] MIME·크기·해시 중복 (동기, 빠르게 202 반환)
@@ -45,7 +45,7 @@ NestJS → POST /internal/documents/upload
    │
    ▼
 [SQS 발행] doc_id, tenant_id, version, s3_path
-                                              ┌── 이 시점에 NestJS에 202 반환
+                                              ┌── 이 시점에 Next.js에 202 반환
                                               │
 [ECS Worker가 SQS 소비] ────────────────────────┘
    │
@@ -53,7 +53,7 @@ NestJS → POST /internal/documents/upload
 파싱 → 청킹 → 임베딩 → Pinecone + Neo4j 색인 → 상태 갱신
 ```
 
-NestJS는 `GET /internal/documents/jobs/{job_id}`로 상태를 폴링한다.
+Next.js는 `GET /internal/documents/jobs/{job_id}`로 상태를 폴링한다.
 
 상세는 `03-document-pipeline.md`.
 
@@ -62,9 +62,9 @@ NestJS는 `GET /internal/documents/jobs/{job_id}`로 상태를 폴링한다.
 | 작업 | 처리 형태 | 이유 |
 |---|---|---|
 | 질문 → 답변 | 동기 SSE | 사용자 체감 응답성이 최우선. 첫 토큰 P95 ≤ 3s |
-| 캐시 hit | 동기 SSE (동일 인터페이스) | NestJS·클라이언트 입장에서 캐시 hit 여부를 몰라도 됨 |
+| 캐시 hit | 동기 SSE (동일 인터페이스) | Next.js·클라이언트 입장에서 캐시 hit 여부를 몰라도 됨 |
 | 문서 업로드 | 검증·S3 저장은 동기, 파싱·임베딩·색인은 SQS Worker | 100MB 파일도 빠르게 202 반환, 무거운 단계는 재시도·DLQ가 필요 |
-| 작업 상태 조회 | 동기 GET | NestJS 폴링 |
+| 작업 상태 조회 | 동기 GET | Next.js 폴링 |
 
 ## 2. 외부 의존성
 
@@ -143,7 +143,7 @@ ARC §4.1을 본 서버 관점에서 재정렬:
   전체 완료까지:    위 + 6.0~7.0 ≈ 10.0~11.0s
 ```
 
-NestJS 프록시·네트워크 오버헤드(약 0.5s)는 본 서버 예산 밖이다. **본 서버 내부 첫 토큰 P95 SLO = 4.0s**로 갱신한다 (cold 요청 기준). 클라이언트 체감 첫 토큰 P95는 4.5s.
+Next.js 프록시·네트워크 오버헤드(약 0.5s)는 본 서버 예산 밖이다. **본 서버 내부 첫 토큰 P95 SLO = 4.0s**로 갱신한다 (cold 요청 기준). 클라이언트 체감 첫 토큰 P95는 4.5s.
 
 **PRD §6의 클라이언트 체감 P95 ≤ 3s는 본 서버 단독으로는 달성 불가능 — SLA 재합의 필요**:
 

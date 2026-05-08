@@ -6,7 +6,7 @@
 - 사전 조건:
   - AWS Secrets Manager 쓰기 권한
   - ECS 재배포 권한 (Harness CD 또는 직접)
-  - 본 서버·NestJS 배포 협업
+  - 본 서버·Next.js 배포 협업
 
 ## 시크릿 목록 + 회전 주기
 
@@ -22,7 +22,7 @@
 
 - 회전 대상 시크릿 식별 (Secrets Manager의 `LastRotatedDate` 확인)
 - 다음 점검 후 진행:
-  - [ ] 본 서버·NestJS 양측 정상 동작
+  - [ ] 본 서버·Next.js 양측 정상 동작
   - [ ] CloudWatch 알람 0건 (다른 사고 진행 중 회전 금지)
   - [ ] Harness CD 배포 파이프라인 정상
 
@@ -39,15 +39,15 @@ aws secretsmanager update-secret \
   --secret-string "$NEW_SECRET"
 ```
 
-### 2.2 본 서버·NestJS 동시 재배포 (SECONDARY 인식 시작)
+### 2.2 본 서버·Next.js 동시 재배포 (SECONDARY 인식 시작)
 
-- Harness CD 배포 트리거 (본 서버 + NestJS 두 파이프라인)
+- Harness CD 배포 트리거 (본 서버 + Next.js 두 파이프라인)
 - 양측이 SECONDARY로도 검증 가능 상태가 됨
 
-### 2.3 NestJS가 새 secret으로 호출 전환
+### 2.3 Next.js가 새 secret으로 호출 전환
 
-- NestJS 측 환경 변수 또는 코드에서 PRIMARY 호출 → SECONDARY 호출로 전환
-- NestJS 재배포 (또는 핫 리로드)
+- Next.js 측 환경 변수 또는 코드에서 PRIMARY 호출 → SECONDARY 호출로 전환
+- Next.js 재배포 (또는 핫 리로드)
 
 ### 2.4 PRIMARY를 새 secret으로 교체, SECONDARY 비움
 
@@ -61,7 +61,7 @@ aws secretsmanager update-secret \
   --secret-string ""
 ```
 
-### 2.5 본 서버·NestJS 재배포 (구 secret 인식 종료)
+### 2.5 본 서버·Next.js 재배포 (구 secret 인식 종료)
 
 회전 완료. 다음 회전 90일 후.
 

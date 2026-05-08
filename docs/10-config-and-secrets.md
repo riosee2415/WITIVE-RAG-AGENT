@@ -281,19 +281,19 @@ witive/{env}/{category}/{name}
 12. /health 응답 시작
 ```
 
-5번 Pinecone host 매핑은 **lazy** — 첫 query 시 NestJS의 tenant 메타 endpoint 호출 또는 admin endpoint로 가져온 후 Redis `meta:tenant:{tenant_id}`에 캐시. 시작 시점에 모든 테넌트 host를 미리 가져오지 않음 (테넌트 수가 많으면 시작 시간 부담).
+5번 Pinecone host 매핑은 **lazy** — 첫 query 시 Next.js의 tenant 메타 endpoint 호출 또는 admin endpoint로 가져온 후 Redis `meta:tenant:{tenant_id}`에 캐시. 시작 시점에 모든 테넌트 host를 미리 가져오지 않음 (테넌트 수가 많으면 시작 시간 부담).
 
 ### 5.2 외부 의존성 부트스트랩 contract
 
-NestJS 또는 admin tool이 보유한 정보를 본 서버가 가져오는 방법:
+Next.js 또는 admin tool이 보유한 정보를 본 서버가 가져오는 방법:
 
 | 정보 | 출처 | 캐시 |
 |---|---|---|
-| 테넌트 → Pinecone Index host 매핑 | NestJS `GET /admin/tenants/{tenant_id}/pinecone` (NestJS API) 또는 본 서버 `meta:tenant` Redis 캐시 | 600s |
+| 테넌트 → Pinecone Index host 매핑 | Next.js `GET /admin/tenants/{tenant_id}/pinecone` (Next.js API) 또는 본 서버 `meta:tenant` Redis 캐시 | 600s |
 | 테넌트 → Neo4j Database 명 | 명명 규칙 `tenant_{hex}` (04 §2.1) — API 호출 불필요 | — |
 | 테넌트 → KMS key alias | 명명 규칙 `alias/witive-tenant-{tenant_id}` (04 §3.2) — 호출 불필요 | — |
 
-NestJS API endpoint(`/admin/tenants/...`)는 NestJS contract — 본 docs 외 결정.
+Next.js API endpoint(`/admin/tenants/...`)는 Next.js contract — 본 docs 외 결정.
 
 ---
 

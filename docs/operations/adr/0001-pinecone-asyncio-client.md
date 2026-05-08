@@ -30,7 +30,7 @@ SDK 메이저 버전 핀: `pinecone>=6.0,<7.0` (`docs/10-config-and-secrets.md` 
 |---|---|
 | sync SDK + `asyncio.to_thread` | thread pool 압박 + 진짜 비동기 아님. 동시 query 100건 시 thread starvation |
 | `httpx`로 Pinecone REST 직접 호출 | SDK 구현 복잡도 + 인증·재시도·페일오버 다 자체 구현 부담 |
-| Pinecone TypeScript 클라이언트 (NestJS에서 호출) | 본 서버가 RAG 책임이라 Pinecone 결합도가 본 서버에 있어야 함 — NestJS는 호출만 |
+| Pinecone TypeScript 클라이언트 (Next.js에서 호출) | 본 서버가 RAG 책임이라 Pinecone 결합도가 본 서버에 있어야 함 — Next.js는 호출만 |
 
 ## Consequences
 

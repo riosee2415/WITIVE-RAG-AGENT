@@ -149,9 +149,9 @@ Redis 서킷 오픈 = 모든 요청이 캐시 미스 = 모든 요청이 Bedrock 
 
 | 트리거 | 응답 | 효과 |
 |---|---|---|
-| Bedrock 글로벌 token bucket 한도 초과 | 429 + `Retry-After: <seconds>` + `X-Backpressure-Reason: bedrock_titan_global_bucket` | Bedrock throttling exception 회피, NestJS·클라이언트가 자연 throttle |
+| Bedrock 글로벌 token bucket 한도 초과 | 429 + `Retry-After: <seconds>` + `X-Backpressure-Reason: bedrock_titan_global_bucket` | Bedrock throttling exception 회피, Next.js·클라이언트가 자연 throttle |
 | **동시 SSE connection 상한 도달 (`MAX_CONCURRENT_SSE_CONNECTIONS`, 기본 200/Task)** | 429 + `Retry-After: 5` + `X-Backpressure-Reason: max_concurrent_sse` | Stage 2 30s timeout 워스트 케이스 OOM 1차 방어선. Auto Scaling 60s 쿨다운보다 빠른 보호 |
-| **`/internal/cache/invalidate` tenant당 분당 60회 초과** | 429 + `Retry-After: 60` + `X-Backpressure-Reason: cache_invalidate` | NestJS 버그·악성 호출로부터 Redis CPU와 캐시 hit ratio 보호 |
+| **`/internal/cache/invalidate` tenant당 분당 60회 초과** | 429 + `Retry-After: 60` + `X-Backpressure-Reason: cache_invalidate` | Next.js 버그·악성 호출로부터 Redis CPU와 캐시 hit ratio 보호 |
 | **ECS Task 메모리 사용률 > 85% (1분 평균)** | 신규 query는 429 발행 + **ALB drain mode (헬스 체크 unhealthy 일시 마킹)**. 진행 중 SSE는 graceful 완료 | OOM 직전 갑작스런 connection 드롭 회피 (in-flight SSE 보호). 90%로 임계 상향했던 이전 결정은 사고 직전이라 위험 — 85%로 보수적 조정 |
 | Redis 서킷 오픈 즉시 | `08 §3.3` 시간선 따름 (로컬 token bucket → 5분 후 MAINTENANCE_MODE 자동 전환) | 비용 폭증 방어 |
 | Redis 서킷 오픈 + 5분 지속 | 503 `MAINTENANCE_MODE` 자동 + Critical 알람 강화 | 캐시 0 상태로 풀 트래픽 보호 |
@@ -186,7 +186,7 @@ Redis 서킷 오픈 = 모든 요청이 캐시 미스 = 모든 요청이 Bedrock 
 | 본문 fetch 실패 → SERVICE_DEGRADED → 사용자 재요청 | retryable=false (`06 §1.4`) | 무한 재요청 차단 |
 | **Stage 1 Haiku 장기 장애 → 원본 질문 fallback → 검색 품질 저하 → 사용자 재질문 → Sonnet 호출 비율 ↑** | **자동 방어 부재**. `query.stage1.fallback_total / queries_total > 20% for 30min` 알람(High) + `bedrock_estimated_cost_usd` 시간 평균 2배 알람(Critical) → 운영팀 신속 복구 | 알람 기반 운영 대응 (자동 방어 없음 명시) |
 | **동시 SSE connection burst** (`MAX_CONCURRENT_SSE_CONNECTIONS` 도달) | 429 BACKPRESSURE 즉시 발행 + Auto Scaling trigger | Auto Scaling 60s 쿨다운보다 빠른 OOM 방어 |
-| **NestJS 버그로 cache/invalidate 폭주** | tenant당 60/min rate limit + 429 | Redis CPU + 캐시 hit ratio 보호 |
+| **Next.js 버그로 cache/invalidate 폭주** | tenant당 60/min rate limit + 429 | Redis CPU + 캐시 hit ratio 보호 |
 
 이 표가 **"경제적 이익을 최대한"** 가치의 핵심 가드레일이다. 새 fallback 경로 추가 시 본 표에 행 추가 + 비용 영향 설명 필수.
 

@@ -7,7 +7,7 @@
 | 파일 | 주기 | 책임자 |
 |---|---|---|
 | [`secret-rotation.md`](./secret-rotation.md) | 90일 (시크릿별) | DevOps |
-| [`tenant-onboarding.md`](./tenant-onboarding.md) | 신규 테넌트 추가 시 | DevOps + Backend (NestJS) |
+| [`tenant-onboarding.md`](./tenant-onboarding.md) | 신규 테넌트 추가 시 | DevOps + Backend (Next.js) |
 
 ## 추가 작성 예정
 

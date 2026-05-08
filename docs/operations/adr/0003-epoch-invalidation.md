@@ -50,7 +50,7 @@ rag:q2:{tenant_id}:{epoch}:{access_sig}:{sha256(rewritten_norm)}
 - INCR 실패 (Redis 일시 장애) 시 잠시 stale 노출 — TTL 60~300s 만료까지
 
 후속 작업:
-- `06 §3.2` `/internal/cache/invalidate` endpoint를 NestJS가 권한 변경 시 명시 호출 가능하게
+- `06 §3.2` `/internal/cache/invalidate` endpoint를 Next.js가 권한 변경 시 명시 호출 가능하게
 - 같은 endpoint에 tenant당 분당 60회 rate limit (검수 4차 M-4)
 - `09 §2.3` `epoch_invalidation_total{tenant_id}` 메트릭 발행 (per-tenant 화이트리스트 적용 시)
 
