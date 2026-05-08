@@ -153,6 +153,7 @@ reports/*.html
 # 작업 명세 (/spec, /spec-new) — 임시 백로그 용도 (사용자 결정)
 specs/**/*.md
 !specs/README.md
+!specs/_done/.gitkeep
 
 # 실 고객 데이터 골든셋 (PII 위험, 별도 사설 저장소 — `docs/11-testing.md` §4.4)
 tests/rag_eval/private/

@@ -1,0 +1,17 @@
+[importlinter]
+root_packages =
+    app
+
+[importlinter:contract:layers]
+name = Layered architecture
+type = layers
+layers =
+    app.api
+    app.workers
+    app.pipeline
+    app.infra
+    app.domain
+ignore_imports =
+    app.platform -> **
+    ** -> app.platform
+unmatched_ignore_imports_alerting = none

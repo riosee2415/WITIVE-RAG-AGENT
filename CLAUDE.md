@@ -7,7 +7,7 @@ LLM·RAG·AI 전담 FastAPI 마이크로서비스. Next.js 백엔드(Supabase Au
 1. **`@docs/`가 단일 진실 출처** — 코드 변경이 docs와 어긋나면 거부 (`docs-sync` Skill 자동 검증)
 2. **`@docs/00-scope.md` 책임 경계 위반 금지** — Supabase Auth 직접 호출, 사용자 식별자 생성, 인프라 프로비저닝, Next.js 책임 영역 호출 모두 거부
 3. **모든 데이터 접근은 `tenant_id` 필터 강제** — 누락된 코드는 `import-linter`/QA가 자동 차단 (`@docs/07-multitenancy-and-access.md`)
-4. **외부 의존성 호출은 `app/infra/`만** — `pipeline`·`api`·`domain` 직접 호출 금지 (`@docs/12-coding-conventions.md` §3)
+4. **외부 의존성 호출은 `src/app/infra/`만** — `pipeline`·`api`·`domain` 직접 호출 금지 (`@docs/12-coding-conventions.md` §3)
 5. **비용 영향 결정은 ADR 작성** — `@docs/operations/adr/`
 
 ## 작업 진입점 (slash 명령어)
@@ -51,15 +51,17 @@ LLM·RAG·AI 전담 FastAPI 마이크로서비스. Next.js 백엔드(Supabase Au
 
 ## 디렉토리별 세부 규칙
 
+코드는 src layout을 따른다 (`src/app/...`). 디렉토리별 컨텍스트 파일도 코드와 같은 위치에 둔다.
+
 | 위치 | 책임 |
 |---|---|
-| `app/CLAUDE.md` | 6 레이어 의존 방향 강제 |
-| `app/api/CLAUDE.md` | FastAPI router |
-| `app/domain/CLAUDE.md` | 도메인 모델 (외부 라이브러리 의존 0) |
-| `app/pipeline/CLAUDE.md` | 유즈케이스 (도메인 + infra 조합) |
-| `app/infra/CLAUDE.md` | 외부 의존성 어댑터 |
-| `app/platform/CLAUDE.md` | 횡단 관심사 |
-| `app/workers/CLAUDE.md` | SQS 소비자 |
+| `src/app/CLAUDE.md` | 6 레이어 의존 방향 강제 |
+| `src/app/api/CLAUDE.md` | FastAPI router |
+| `src/app/domain/CLAUDE.md` | 도메인 모델 (외부 라이브러리 의존 0) |
+| `src/app/pipeline/CLAUDE.md` | 유즈케이스 (도메인 + infra 조합) |
+| `src/app/infra/CLAUDE.md` | 외부 의존성 어댑터 |
+| `src/app/platform/CLAUDE.md` | 횡단 관심사 |
+| `src/app/workers/CLAUDE.md` | SQS 소비자 |
 
 ## 참조
 
